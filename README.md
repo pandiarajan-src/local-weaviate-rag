@@ -32,6 +32,9 @@ pip install -r requirements.txt
 # Configure environment variables
 cp .env.example .env
 # Edit .env and add your OPENAI_API_KEY
+
+# Test your setup
+python test_setup.py
 ```
 
 ### 3. Start Weaviate
@@ -200,6 +203,7 @@ local-weaviate-rag/
 ├── config.py                 # Configuration management
 ├── ingest_documents.py       # Document ingestion system
 ├── query_rag.py             # Query processing system
+├── test_setup.py            # Setup validation script
 └── README.md                # This file
 ```
 

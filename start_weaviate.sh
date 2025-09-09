@@ -9,7 +9,7 @@ if ! docker info > /dev/null 2>&1; then
 fi
 
 # Start Weaviate using Docker Compose
-docker-compose up -d
+docker compose up -d
 
 # Wait for Weaviate to be ready
 echo "Waiting for Weaviate to be ready..."
@@ -29,5 +29,5 @@ while [ $counter -lt $timeout ]; do
 done
 
 echo "Error: Weaviate failed to start within $timeout seconds"
-echo "Check the logs with: docker-compose logs weaviate"
+echo "Check the logs with: docker compose logs weaviate"
 exit 1
