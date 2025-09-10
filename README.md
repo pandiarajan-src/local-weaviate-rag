@@ -1,325 +1,309 @@
-# Local Weaviate RAG System
+# Local Weaviate RAG (OpenAI Embeddings + GPT-4o)
 
-A complete Retrieval-Augmented Generation (RAG) system using local Weaviate vector database, OpenAI's text-embedding-3-small for embeddings, and GPT-4.1 for inference.
+A minimal, secure, and fast local RAG (Retrieval-Augmented Generation) system that lets you chat with your documents using AI.
 
 ## Features
+- 🐳 **Weaviate vector database** in Docker with API-key authentication and persistent storage
+- 🧠 **OpenAI embeddings** (`text-embedding-3-small`) for semantic search
+- 🔍 **Hybrid search** combining BM25 keyword search + vector similarity
+- 🤖 **GPT-4o** for intelligent question answering from your documents
+- ⚙️ **Simple configuration** via `.env` file
+- 🔒 **Security-focused** with proper input validation and error handling
 
-- 🚀 Local Weaviate instance running in Docker
-- 📄 Document chunking and embedding with OpenAI text-embedding-3-small
-- 🔍 Hybrid search (vector + keyword) for optimal retrieval
-- 🤖 Response generation using GPT-4.1
-- 💬 Interactive query interface
-- 🛠️ Easy setup and management scripts
+## Prerequisites
+- Docker & Docker Compose
+- Python 3.10+
+- OpenAI API key ([get one here](https://platform.openai.com/api-keys))
 
 ## Quick Start
 
-### 1. Prerequisites
-
-- Docker and Docker Compose
-- Python 3.8+
-- OpenAI API key
-
-### 2. Installation
-
+### 1. Setup
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd local-weaviate-rag
+# Clone and enter directory
+git clone <this-repo> && cd local-weaviate-rag
 
-# Install Python dependencies
-pip install -r requirements.txt
-
-# Configure environment variables
+# Copy and configure environment
 cp .env.example .env
-# Edit .env and add your OPENAI_API_KEY
-
-# Test your setup
-python test_setup.py
+# Edit .env and set your OPENAI_API_KEY and WEAVIATE_API_KEY
 ```
 
-### 3. Start Weaviate
-
+### 2. Start Weaviate Database
 ```bash
-# Start local Weaviate instance
 ./start_weaviate.sh
+# Wait ~10 seconds for Weaviate to fully start
 ```
 
-### 4. Ingest Documents
-
+### 3. Install Dependencies
 ```bash
-# Setup Weaviate schema
-python ingest_documents.py --setup-schema
+# Using uv (recommended)
+uv sync
+```
 
+### 4. Test Core Functionality (Optional)
+```bash
+# Run tests to verify everything is working
+uv run python test_functionality.py
+```
+
+### 5. Ingest Your First Document
+```bash
 # Ingest a text file
-python ingest_documents.py --file path/to/your/document.txt
+uv run python -m rag.ingest README.md --source "Project Documentation"
 
-# Or ingest text directly
-python ingest_documents.py --text "Your text content here" --source "manual_input"
+# OR ingest raw text directly
+uv run python -m rag.ingest "Python is a programming language" --source "Quick Note"
 ```
 
-### 5. Query the System
-
+### 6. Ask Questions
 ```bash
-# Interactive mode (recommended)
-python query_rag.py --interactive
-
-# Single query
-python query_rag.py --query "Your question here"
-
-# Query with options
-python query_rag.py --query "Your question" --search-type hybrid --limit 10 --verbose
+uv run python -m rag.query "What is this project about?"
+uv run python -m rag.query "How do I install the dependencies?"
 ```
 
-### 6. Stop Weaviate
-
-```bash
-# Stop Weaviate when done
-./stop_weaviate.sh
-```
-
-## Detailed Usage
-
-### Starting and Stopping Weaviate
-
-The system includes convenient scripts to manage the local Weaviate instance:
-
-```bash
-# Start Weaviate
-./start_weaviate.sh
-# ✓ Starts Docker container
-# ✓ Waits for Weaviate to be ready
-# ✓ Provides status confirmation
-
-# Stop Weaviate
-./stop_weaviate.sh
-# ✓ Stops container gracefully
-# ✓ Preserves data in Docker volume
-```
+## Detailed Usage Examples
 
 ### Document Ingestion
 
-The `ingest_documents.py` script handles document processing:
+#### Ingest Different File Types
+```bash
+# Markdown files
+uv run python -m rag.ingest docs/api.md --source "API Documentation"
 
-#### Basic Usage
+# Python code
+uv run python -m rag.ingest src/main.py --source "Source Code"
+
+# Text files
+uv run python -m rag.ingest notes.txt --source "Meeting Notes"
+
+# JSON configuration
+uv run python -m rag.ingest config.json --source "Configuration"
+
+# Multiple files (run separately)
+uv run python -m rag.ingest doc1.md --source "Documentation"
+uv run python -m rag.ingest doc2.md --source "Documentation"  
+uv run python -m rag.ingest code.py --source "Source Code"
+```
+
+#### Ingest Raw Text
+```bash
+# Short text snippets
+uv run python -m rag.ingest "The API endpoint is /users/{id}" --source "API Notes"
+
+# Longer text (use quotes)
+uv run python -m rag.ingest "This is a long document about machine learning concepts..." --source "ML Guide"
+```
+
+### Querying Examples
+
+#### Basic Questions
+```bash
+# Simple factual questions
+uv run python -m rag.query "What is the main purpose of this project?"
+uv run python -m rag.query "How do I configure the database?"
+uv run python -m rag.query "What are the prerequisites?"
+
+# Technical questions
+uv run python -m rag.query "What Python version is required?"
+uv run python -m rag.query "Which ports does Weaviate use?"
+uv run python -m rag.query "How do I reset the database?"
+```
+
+#### Advanced Queries
+```bash
+# Comparative questions
+uv run python -m rag.query "What's the difference between BM25 and vector search?"
+
+# Step-by-step questions  
+uv run python -m rag.query "Show me the complete setup process"
+
+# Code-related questions
+uv run python -m rag.query "How does the chunking algorithm work?"
+uv run python -m rag.query "What error handling is implemented?"
+```
+
+## Database Management
+
+### Reset Database (Clear All Data)
+```bash
+# ⚠️ WARNING: This permanently deletes all ingested documents
+./reset_weaviate.sh
+```
+
+### Stop/Start Database
+```bash
+# Stop Weaviate
+./stop_weaviate.sh
+
+# Start Weaviate  
+./start_weaviate.sh
+```
+
+### Check Database Status
+```bash
+# Check if Weaviate is running
+docker compose -f docker-compose.weaviate.yml ps
+
+# View logs
+docker compose -f docker-compose.weaviate.yml logs -f
+```
+
+## Configuration Guide
+
+### Environment Variables (`.env`)
 
 ```bash
-# Setup schema (run once)
-python ingest_documents.py --setup-schema
+# Weaviate Database
+WEAVIATE_SCHEME=http              # Use https in production
+WEAVIATE_HOST=localhost
+WEAVIATE_PORT=8080
+WEAVIATE_API_KEY=your-secret-key  # Change this!
 
-# Ingest a file
-python ingest_documents.py --file document.txt
+# OpenAI API
+OPENAI_API_KEY=sk-your-key        # Your OpenAI API key
+OPENAI_EMBED_MODEL=text-embedding-3-small
+OPENAI_COMPLETIONS_MODEL=gpt-4o
 
-# Ingest text directly
-python ingest_documents.py --text "Content to ingest" --source "my_source"
+# RAG Configuration
+RAG_COLLECTION=Documents          # Collection name
+CHUNK_TOKENS=400                  # Text chunk size
+CHUNK_OVERLAP=60                  # Overlap between chunks
+HYBRID_ALPHA=0.5                  # 0=keyword only, 1=vector only
+TOP_K=5                          # Results to retrieve
+MAX_CONTEXT_CHUNKS=6             # Max chunks sent to GPT
 ```
 
-#### Features
+### Tuning Parameters
 
-- **Smart Chunking**: Automatically chunks documents using token-based splitting
-- **Overlap Support**: Configurable chunk overlap to maintain context
-- **OpenAI Embeddings**: Uses text-embedding-3-small for high-quality embeddings
-- **Metadata Preservation**: Tracks source, chunk positions, and token counts
-- **Batch Processing**: Efficient batch uploads to Weaviate
+#### Chunk Size (`CHUNK_TOKENS`)
+- **Small (200-300)**: Better for precise, specific answers
+- **Medium (400-500)**: Balanced, good default
+- **Large (600-800)**: Better for complex, contextual answers
 
-### Querying the System
+#### Search Balance (`HYBRID_ALPHA`)
+- **0.0**: Pure keyword search (BM25) - good for exact term matches
+- **0.5**: Balanced hybrid search - recommended default
+- **1.0**: Pure vector search - good for semantic similarity
 
-The `query_rag.py` script provides powerful querying capabilities:
+#### Retrieval (`TOP_K`, `MAX_CONTEXT_CHUNKS`)
+- **TOP_K**: More results = better coverage, but slower
+- **MAX_CONTEXT_CHUNKS**: More context = better answers, but higher cost
 
-#### Interactive Mode (Recommended)
+## Real-World Workflow Examples
 
+### Example 1: Documentation RAG
 ```bash
-python query_rag.py --interactive
+# 1. Ingest your project docs
+uv run python -m rag.ingest README.md --source "Main Documentation"
+uv run python -m rag.ingest docs/api.md --source "API Reference"  
+uv run python -m rag.ingest docs/tutorial.md --source "Tutorial"
+
+# 2. Ask questions
+uv run python -m rag.query "How do I authenticate with the API?"
+uv run python -m rag.query "Show me a complete example"
 ```
 
-Features:
-- Continuous querying session
-- Real-time responses
-- Detailed result display
-- Easy exit commands
-
-#### Single Query Mode
-
+### Example 2: Code Analysis RAG  
 ```bash
-# Basic query
-python query_rag.py --query "What is machine learning?"
+# 1. Ingest source code
+uv run python -m rag.ingest src/models.py --source "Models"
+uv run python -m rag.ingest src/api.py --source "API Layer"
+uv run python -m rag.ingest src/utils.py --source "Utilities"
 
-# Advanced options
-python query_rag.py \
-  --query "Explain neural networks" \
-  --search-type hybrid \
-  --limit 10 \
-  --verbose \
-  --output results.json
+# 2. Ask about the code
+uv run python -m rag.query "How does the authentication work?"
+uv run python -m rag.query "What models are defined?"
+uv run python -m rag.query "Find the error handling patterns"
 ```
 
-#### Search Types
-
-- **Hybrid Search** (default): Combines vector similarity and keyword matching
-- **Vector Search**: Pure semantic similarity search
-
-### Configuration
-
-Edit `.env` file to customize settings:
-
-```env
-# Required
-OPENAI_API_KEY=your_openai_api_key_here
-
-# Optional customization
-WEAVIATE_URL=http://localhost:8080
-CHUNK_SIZE=1000
-CHUNK_OVERLAP=200
-EMBEDDING_MODEL=text-embedding-3-small
-CHAT_MODEL=gpt-4-turbo-preview
-```
-
-## System Architecture
-
-```
-User Query
-    ↓
-Query Processing (query_rag.py)
-    ↓
-Embedding Generation (OpenAI)
-    ↓
-Hybrid Search (Weaviate)
-    ↓
-Context Retrieval
-    ↓
-Response Generation (GPT-4.1)
-    ↓
-Final Answer
-```
-
-## Files Structure
-
-```
-local-weaviate-rag/
-├── docker-compose.yml          # Weaviate Docker setup
-├── start_weaviate.sh          # Start Weaviate script
-├── stop_weaviate.sh           # Stop Weaviate script
-├── requirements.txt           # Python dependencies
-├── .env.example              # Environment template
-├── config.py                 # Configuration management
-├── ingest_documents.py       # Document ingestion system
-├── query_rag.py             # Query processing system
-├── test_setup.py            # Setup validation script
-└── README.md                # This file
-```
-
-## Error Handling
-
-### Common Issues
-
-1. **Docker not running**
-   ```bash
-   Error: Docker is not running. Please start Docker first.
-   ```
-   Solution: Start Docker Desktop or Docker service
-
-2. **Missing OpenAI API key**
-   ```bash
-   Error: OPENAI_API_KEY is required. Please set it in .env file
-   ```
-   Solution: Add your API key to `.env` file
-
-3. **Weaviate not responding**
-   ```bash
-   Error: Weaviate failed to start within 60 seconds
-   ```
-   Solution: Check Docker logs with `docker-compose logs weaviate`
-
-4. **No documents found**
-   ```bash
-   I couldn't find any relevant documents to answer your question.
-   ```
-   Solution: Ingest documents first using `ingest_documents.py`
-
-### Debugging
-
+### Example 3: Research RAG
 ```bash
-# Check Weaviate status
-curl http://localhost:8080/v1/meta
+# 1. Ingest research papers/notes
+uv run python -m rag.ingest paper1.txt --source "ML Research"
+uv run python -m rag.ingest notes.md --source "Research Notes" 
+uv run python -m rag.ingest summary.txt --source "Literature Review"
 
-# View Docker logs
-docker-compose logs weaviate
-
-# Check ingested documents count
-# (Access Weaviate console at http://localhost:8080)
+# 2. Research questions
+uv run python -m rag.query "What are the main findings about neural networks?"
+uv run python -m rag.query "Compare the different approaches mentioned"
 ```
-
-## Performance Tips
-
-1. **Chunking**: Adjust `CHUNK_SIZE` and `CHUNK_OVERLAP` for your documents
-2. **Search Results**: Use `--limit` to control context document count
-3. **Search Type**: Use vector search for semantic queries, hybrid for mixed
-4. **Batch Size**: Large documents are processed in batches automatically
-
-## Examples
-
-### Example 1: Technical Documentation
-
-```bash
-# Ingest API documentation
-python ingest_documents.py --file api_docs.txt --source "API_Documentation"
-
-# Query about specific endpoints
-python query_rag.py --query "How do I authenticate with the API?"
-```
-
-### Example 2: Research Papers
-
-```bash
-# Ingest research paper
-python ingest_documents.py --file research_paper.txt --source "ML_Research_2024"
-
-# Ask research questions
-python query_rag.py --query "What are the key findings about neural networks?" --verbose
-```
-
-### Example 3: Company Knowledge Base
-
-```bash
-# Ingest multiple documents
-python ingest_documents.py --file policies.txt --source "HR_Policies"
-python ingest_documents.py --file procedures.txt --source "IT_Procedures"
-
-# Interactive querying
-python query_rag.py --interactive
-```
-
-## Advanced Usage
-
-### Custom System Prompts
-
-Modify the `generate_response` method in `query_rag.py` to customize the AI behavior.
-
-### Metadata Filtering
-
-Extend the search methods in `WeaviateSearcher` to filter by source or other metadata.
-
-### Multiple Collections
-
-Modify `Config.COLLECTION_NAME` to use different collections for different document types.
 
 ## Troubleshooting
 
-If you encounter issues:
+### Common Issues
 
-1. Check all prerequisites are installed
-2. Verify Docker is running and accessible
-3. Ensure OpenAI API key is valid and has credits
-4. Check Weaviate is responding at http://localhost:8080
-5. Verify documents are ingested before querying
+#### "Connection refused" or "Cannot connect to Weaviate"
+```bash
+# Check if Weaviate is running
+docker compose -f docker-compose.weaviate.yml ps
 
-## Contributing
+# If not running, start it
+./start_weaviate.sh
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+# Check logs for errors
+docker compose -f docker-compose.weaviate.yml logs
+```
+
+#### "OpenAI API key not found"
+```bash
+# Make sure .env file exists and contains your API key
+cat .env | grep OPENAI_API_KEY
+
+# If missing, add it:
+echo "OPENAI_API_KEY=sk-your-actual-key-here" >> .env
+```
+
+#### "No results found"
+```bash
+# Check if documents were ingested
+uv run python -m rag.query "test"
+
+# If no results, try ingesting again
+uv run python -m rag.ingest "test document" --source "test"
+```
+
+#### Port conflicts (8080 already in use)
+```bash
+# Change the port in .env
+echo "WEAVIATE_PORT=8081" >> .env
+
+# Restart Weaviate
+./stop_weaviate.sh
+./start_weaviate.sh
+```
+
+### Performance Tips
+
+1. **Batch ingestion**: Ingest multiple documents before querying
+2. **Optimize chunk size**: Experiment with `CHUNK_TOKENS` for your use case  
+3. **Tune search**: Adjust `HYBRID_ALPHA` based on your query patterns
+4. **Monitor costs**: Check OpenAI usage, especially with large documents
+
+### Security Notes
+
+- ⚠️ **Never commit `.env`** - it contains your API keys
+- 🔒 **Use strong `WEAVIATE_API_KEY`** - at least 16 characters
+- 🔐 **Use HTTPS in production** - set `WEAVIATE_SCHEME=https`
+- 📁 **Validate file inputs** - the system checks file types and sizes
+
+## Development
+
+### Running Tests
+```bash
+# Run core functionality tests (no external API calls)
+uv run python test_functionality.py
+
+# Run basic end-to-end test (requires OpenAI API key and Weaviate)
+uv run python -m rag.ingest "This is a test document" --source "test"
+uv run python -m rag.query "What is this about?"
+```
+
+### Adding New Features
+The codebase is modular:
+- `rag/utils.py` - Shared utilities and configuration
+- `rag/ingest.py` - Document ingestion and chunking  
+- `rag/query.py` - Search and answer generation
 
 ## License
 
-This project is open source. Please check the repository for license details.
+This project is open source. Feel free to modify and distribute.
+

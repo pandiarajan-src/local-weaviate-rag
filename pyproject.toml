@@ -1,0 +1,12 @@
+[project]
+name = "local-weaviate-rag"
+version = "0.1.0"
+description = "Minimal local Weaviate RAG (OpenAI Embeddings + GPT-4o)"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "weaviate-client>=4.6.5",
+  "openai>=1.40.0",
+  "tiktoken>=0.7.0",
+  "python-dotenv>=1.0.1",
+]
