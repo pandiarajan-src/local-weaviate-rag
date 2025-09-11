@@ -115,7 +115,8 @@ def main():
         allowed_extensions = {'.txt', '.md', '.py', '.js', '.json', '.csv', '.html', '.xml', '.rst', '.tex'}
         file_ext = os.path.splitext(resolved_path)[1].lower()
         if file_ext and file_ext not in allowed_extensions:
-            logger.warning(f"File extension '{file_ext}' may not be suitable for text processing")
+            logger.error(f"File extension '{file_ext}' is not supported. Allowed extensions are: {', '.join(sorted(allowed_extensions))}")
+            sys.exit(2)
         
         # Check file size (limit to 50MB for safety)
         try:

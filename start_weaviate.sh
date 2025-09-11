@@ -8,5 +8,5 @@ if [ -f .env ]; then
 fi
 
 docker compose -f docker-compose.weaviate.yml up -d
-echo "Weaviate is starting on http://localhost:${WEAVIATE_PORT:-8080}
-"
+
+echo "Weaviate is starting on http://localhost:${WEAVIATE_PORT:-8080}"
