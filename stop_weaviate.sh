@@ -2,5 +2,4 @@
 set -euo pipefail
 
 docker compose -f docker-compose.weaviate.yml down
-echo "Weaviate has been stopped.
-"
+echo "Weaviate has been stopped."
