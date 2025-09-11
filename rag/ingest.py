@@ -34,22 +34,59 @@ def ensure_schema(client: weaviate.WeaviateClient, collection_name: str) -> Coll
     Returns:
         Weaviate collection instance
     """
+    import time
+    
+    # First, check if collection already exists and is working
     try:
-        # Try to get the collection - if it exists, return it
-        return client.collections.get(collection_name)
-    except Exception:
-        # Collection doesn't exist, create it
-        logger.info(f"Creating collection '{collection_name}' (no server vectorizer; we push vectors).")
+        existing_collection = client.collections.get(collection_name)
+        # Test if the collection is accessible and working
+        existing_collection.query.fetch_objects(limit=1)
+        logger.info(f"Collection '{collection_name}' already exists and is functional.")
+        return existing_collection
+    except Exception as e:
+        logger.info(f"Collection '{collection_name}' doesn't exist or has issues: {e}")
+        
+        # If collection exists but is corrupted, try to delete it
+        try:
+            client.collections.delete(collection_name)
+            logger.info(f"Deleted corrupted collection '{collection_name}'.")
+            time.sleep(2)  # Wait for deletion to propagate
+        except Exception:
+            logger.info(f"Collection '{collection_name}' deletion not needed or already deleted.")
+    
+    # Create the collection with proper configuration
+    try:
+        logger.info(f"Creating collection '{collection_name}' with proper schema...")
+        
+        # Create collection with default configuration (no server vectorizer)
         client.collections.create(
             name=collection_name,
             properties=[
                 Property(name="text", data_type=DataType.TEXT),
-                Property(name="source", data_type=DataType.TEXT),
+                Property(name="source", data_type=DataType.TEXT), 
                 Property(name="chunk_id", data_type=DataType.TEXT),
             ],
-            vector_config=Configure.VectorIndex.none(),
+            # No vector configuration specified - allows manual vector insertion
         )
-        return client.collections.get(collection_name)
+        
+        # Wait a moment for schema to propagate
+        time.sleep(2)
+        
+        # Verify the collection was created properly
+        collection = client.collections.get(collection_name)
+        
+        # Test that we can query the collection to verify schema is ready
+        try:
+            collection.query.fetch_objects(limit=1)
+            logger.info(f"Successfully created and verified collection '{collection_name}'.")
+        except Exception as query_error:
+            logger.warning(f"Collection created but query test failed: {query_error}")
+            
+        return collection
+        
+    except Exception as e:
+        logger.error(f"Failed to create collection '{collection_name}': {e}")
+        raise
 
 @backoff_retry
 def embed_chunks(client: OpenAI, model: str, chunks: List[str]) -> List[List[float]]:
@@ -192,14 +229,53 @@ def main():
     client = get_weaviate_client()
     try:
         coll = ensure_schema(client, collection_name)
+        
+        # Add a small delay to ensure schema is properly propagated
+        import time
+        time.sleep(1)
+        
+        # Verify the collection is actually ready for insertion
+        try:
+            # Test that we can access the collection properly
+            existing_count = len(coll.query.fetch_objects().objects)
+            logger.info(f"Collection '{collection_name}' has {existing_count} existing objects.")
+        except Exception as e:
+            logger.warning(f"Could not query existing objects: {e}")
+        
         # Batch insert with vectors
-        with coll.batch.dynamic() as batch:
+        logger.info(f"Starting batch insertion of {len(chunks)} chunks...")
+        try:
+            with coll.batch.dynamic() as batch:
+                for i, (chunk, vec) in enumerate(zip(chunks, vectors)):
+                    batch.add_object(
+                        properties={"text": chunk, "source": args.source, "chunk_id": str(i)},
+                        vector=vec,
+                    )
+                    logger.debug(f"Added object {i+1}/{len(chunks)} to batch")
+            
+            # Check for any failed objects
+            if hasattr(coll.batch, 'failed_objects') and coll.batch.failed_objects:
+                logger.error(f"Failed to insert {len(coll.batch.failed_objects)} objects:")
+                for failed_obj in coll.batch.failed_objects:
+                    logger.error(f"Failed object: {failed_obj}")
+                sys.exit(1)
+                
+            logger.info(f"Ingested {len(chunks)} chunks into '{collection_name}'.")
+        except Exception as batch_error:
+            logger.error(f"Batch insertion failed: {batch_error}")
+            # Try individual insertion as fallback
+            logger.info("Attempting individual object insertion as fallback...")
             for i, (chunk, vec) in enumerate(zip(chunks, vectors)):
-                batch.add_object(
-                    properties={"text": chunk, "source": args.source, "chunk_id": str(i)},
-                    vector=vec,
-                )
-        logger.info(f"Ingested {len(chunks)} chunks into '{collection_name}'.")
+                try:
+                    coll.data.insert(
+                        properties={"text": chunk, "source": args.source, "chunk_id": str(i)},
+                        vector=vec,
+                    )
+                    logger.debug(f"Individually inserted object {i+1}/{len(chunks)}")
+                except Exception as individual_error:
+                    logger.error(f"Failed to insert object {i+1}: {individual_error}")
+            logger.info(f"Fallback insertion completed for {len(chunks)} chunks.")
+            
     except Exception as e:
         logger.error(f"Ingestion failed: {e}")
         sys.exit(1)
