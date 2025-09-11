@@ -1,5 +1,4 @@
 # Local Weaviate RAG (OpenAI Embeddings + GPT-4o)
-# Test
 
 A minimal, secure, and fast local RAG (Retrieval-Augmented Generation) system that lets you chat with your documents using AI.
 
