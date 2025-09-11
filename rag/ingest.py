@@ -32,8 +32,6 @@ def ensure_schema(client: weaviate.WeaviateClient, collection_name: str) -> Coll
     Returns:
         Weaviate collection instance
     """
-    import time
-
     # First, check if collection already exists and is working
     try:
         existing_collection = client.collections.get(collection_name)
