@@ -289,19 +289,77 @@ echo "WEAVIATE_PORT=8081" >> .env
 
 ### Running Tests
 ```bash
-# Run core functionality tests (no external API calls)
-uv run python test_functionality.py
+# Run comprehensive functionality tests
+uv run python tests/test_functionality.py
+
+# Or use the Makefile
+make test
 
 # Run basic end-to-end test (requires OpenAI API key and Weaviate)
 uv run python -m rag.ingest "This is a test document" --source "test"
 uv run python -m rag.query "What is this about?"
 ```
 
+### Code Quality & Linting
+
+This project includes comprehensive linting and code quality tools:
+
+#### Available Linters
+- **Ruff** - Fast Python linter with auto-fix (replaces flake8, isort, pyupgrade)
+- **Black** - Code formatter for consistent style
+- **isort** - Import sorting and organization
+- **mypy** - Static type checking
+- **shellcheck** - Shell script linting
+
+#### Quick Commands
+```bash
+# Install development dependencies
+make install-dev
+
+# Run all linters with auto-fix
+make lint-fix
+
+# Check code quality without fixing
+make lint
+
+# Format code only
+make format
+
+# Clean up temporary files
+make clean
+```
+
+#### Manual Linting
+```bash
+# Run all linters with auto-fix
+./lint.sh --fix
+
+# Run specific linters
+./lint.sh --ruff-only --fix    # Fast Python linting + formatting
+./lint.sh --mypy-only          # Type checking
+./lint.sh --shellcheck-only    # Shell script checking
+
+# Check without fixing
+./lint.sh                     # All linters (check mode)
+./lint.sh --quiet             # Minimal output
+```
+
+#### Configuration Files
+- `pyproject.toml` - Python tool configuration (ruff, black, isort, mypy)
+- `.shellcheckrc` - Shellcheck configuration with common warnings disabled
+- `lint.sh` - Comprehensive linting script with auto-fix capabilities
+
 ### Adding New Features
-The codebase is modular:
+The codebase is modular and follows strict code quality standards:
 - `rag/utils.py` - Shared utilities and configuration
 - `rag/ingest.py` - Document ingestion and chunking  
 - `rag/query.py` - Search and answer generation
+- `tests/` - Comprehensive test suite
+
+**Before submitting changes:**
+1. Run `make lint-fix` to auto-fix issues
+2. Run `make test` to ensure functionality works
+3. Check that all linters pass with `make lint`
 
 ## License
 

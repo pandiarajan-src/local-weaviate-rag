@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
-import sys
 import argparse
 import logging
-from typing import List
+import sys
 
-from dotenv import load_dotenv, find_dotenv
-import weaviate
-from weaviate.classes.init import AdditionalConfig
-from weaviate.collections import Collection
+from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
+from weaviate.collections import Collection
 
-from .utils import env, logger, backoff_retry, get_weaviate_client
+from .utils import backoff_retry, env, get_weaviate_client, logger
 
 _env_path = find_dotenv(usecwd=True)
 if _env_path:
@@ -21,17 +18,19 @@ logging.getLogger("weaviate").setLevel(logging.WARNING)
 
 
 @backoff_retry
-def hybrid_search(coll: Collection, query: str, query_vector: List[float], alpha: float, limit: int):
+def hybrid_search(
+    coll: Collection, query: str, query_vector: list[float], alpha: float, limit: int
+):
     """
     Perform hybrid search combining BM25 and vector similarity.
-    
+
     Args:
         coll: Weaviate collection instance
         query: Search query string
         query_vector: Vector representation of the query
         alpha: Balance between BM25 (0.0) and vector (1.0) search
         limit: Maximum number of results to return
-        
+
     Returns:
         Search results from Weaviate
     """
@@ -41,17 +40,18 @@ def hybrid_search(coll: Collection, query: str, query_vector: List[float], alpha
         alpha=alpha,
         limit=limit,
         return_metadata=["distance"],
-        return_properties=["text", "source", "chunk_id"]
+        return_properties=["text", "source", "chunk_id"],
     )
 
-def build_prompt(question: str, contexts: List[str]) -> str:
+
+def build_prompt(question: str, contexts: list[str]) -> str:
     """
     Build a prompt for the LLM with retrieved context and user question.
-    
+
     Args:
         question: User's question
         contexts: List of relevant text chunks from retrieval
-        
+
     Returns:
         Formatted prompt string for the LLM
     """
@@ -65,8 +65,11 @@ def build_prompt(question: str, contexts: List[str]) -> str:
         "Answer:"
     )
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Query Weaviate (hybrid) and answer with GPT-4o.")
+    parser = argparse.ArgumentParser(
+        description="Query Weaviate (hybrid) and answer with GPT-4o."
+    )
     parser.add_argument("query", help="User query")
     args = parser.parse_args()
 
@@ -88,7 +91,7 @@ def main():
             # Explicitly set the default OpenAI API base URL to avoid environment conflicts
             oa_kwargs["base_url"] = "https://api.openai.com/v1"
         oa = OpenAI(**oa_kwargs)
-        
+
         # Create query vector
         query_response = oa.embeddings.create(model=embed_model, input=[args.query])
         query_vector = query_response.data[0].embedding
@@ -121,7 +124,9 @@ def main():
         print("=" * 80)
         print("RETRIEVED VECTOR SEARCH:")
         print("=" * 80)
-        print(f"Found {len(res.objects)} results, using top {len(contexts)} for context")
+        print(
+            f"Found {len(res.objects)} results, using top {len(contexts)} for context"
+        )
         print()
         for i, context in enumerate(contexts, 1):
             print(f"Result {i}:")
@@ -138,7 +143,7 @@ def main():
         print("FULL DETAILS (QUERY + CONTEXT) TO BE SENT:")
         print("=" * 80)
         print(f"Model: {model}")
-        print(f"Temperature: 0.2")
+        print("Temperature: 0.2")
         print(f"Prompt length: {len(prompt)} characters")
         print()
         print("Full prompt:")
@@ -154,7 +159,7 @@ def main():
         )
 
         answer = resp.choices[0].message.content
-        
+
         # Display final answer
         print("=" * 80)
         print("GENERATED ANSWER:")
@@ -166,6 +171,7 @@ def main():
         sys.exit(1)
     finally:
         client.close()
+
 
 if __name__ == "__main__":
     main()
