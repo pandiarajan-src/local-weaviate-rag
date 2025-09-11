@@ -258,7 +258,6 @@ def main():
         coll = ensure_schema(client, collection_name)
 
         # Add a small delay to ensure schema is properly propagated
-        import time
 
         time.sleep(1)
 
