@@ -1,0 +1,35 @@
+# ShellCheck configuration file
+# Disable common warnings that are acceptable in this project
+
+# SC1091: Not following sourced files (common with .env files)
+disable=SC1091
+
+# SC2034: Variable appears unused (common with environment variables)
+disable=SC2034
+
+# SC2086: Double quote to prevent globbing and word splitting (sometimes intentional)
+disable=SC2086
+
+# SC2059: Don't use variables in printf format string (sometimes needed for dynamic formatting)
+disable=SC2059
+
+# SC2164: Use 'cd ... || exit' (sometimes we want to continue on cd failure)
+disable=SC2164
+
+# SC1090: Can't follow non-constant source (common with dynamic sourcing)
+disable=SC1090
+
+# SC2046: Quote this to prevent word splitting (sometimes intentional for command substitution)
+disable=SC2046
+
+# SC2068: Double quote array expansions (sometimes we want word splitting)
+disable=SC2068
+
+# Enable external sources
+external-sources=true
+
+# Use POSIX shell for better compatibility
+shell=bash
+
+# Set severity level (error, warning, info, style)
+severity=warning
