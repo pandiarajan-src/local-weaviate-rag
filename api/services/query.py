@@ -206,7 +206,7 @@ class QueryService:
     ):  # type: ignore
         """Perform hybrid search."""
 
-        def _search():  # type: ignore
+        def _search() -> Any:  # type: ignore
             return hybrid_search(collection, query, query_vector, alpha, limit)
 
         loop = asyncio.get_event_loop()
