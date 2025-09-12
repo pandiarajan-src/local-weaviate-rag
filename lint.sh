@@ -249,7 +249,8 @@ fi
 if [[ "$RUN_MYPY" == true ]]; then
     print_status "$BLUE" "🔍 Running mypy..."
     
-    if ! uv run mypy rag/ tests/ --exclude 'tests/.*\.py' 2>/dev/null || uv run mypy rag/ 2>/dev/null; then
+
+    if ! uv run mypy rag/ api/ tests/ --exclude 'tests/.*\.py' 2>/dev/null; then
         print_status "$RED" "  ❌ mypy type checking failed"
         # Don't fail the entire script for mypy issues initially
         if [[ "$QUIET_MODE" == false ]]; then
