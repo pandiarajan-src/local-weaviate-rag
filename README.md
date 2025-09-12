@@ -652,6 +652,11 @@ uv run python -m rag.query "How do I contact customer support?"
 ```
 
 ---
+# Run comprehensive functionality tests
+uv run python tests/test_functionality.py
+
+# Or use the Makefile
+make test
 
 ## 🚀 Production Deployment
 
@@ -667,6 +672,7 @@ CHUNK_TOKENS=500
 TOP_K=10
 MAX_CONTEXT_CHUNKS=8
 ```
+
 
 ### **Monitoring and Logging**
 - **Application Logs** - Structured logging to files or log aggregation service
@@ -724,6 +730,68 @@ Contributions are welcome! Please:
 ## 🎉 Conclusion
 
 This repository demonstrates a complete, production-ready RAG system that serves as both an educational resource and a practical tool. By studying and extending this codebase, you'll gain deep understanding of modern AI architecture patterns and be well-prepared to build your own AI-powered applications.
+
+### Code Quality & Linting
+
+This project includes comprehensive linting and code quality tools:
+
+#### Available Linters
+- **Ruff** - Fast Python linter with auto-fix (replaces flake8, isort, pyupgrade)
+- **Black** - Code formatter for consistent style
+- **isort** - Import sorting and organization
+- **mypy** - Static type checking
+- **shellcheck** - Shell script linting
+
+#### Quick Commands
+```bash
+# Install development dependencies
+make install-dev
+
+# Run all linters with auto-fix
+make lint-fix
+
+# Check code quality without fixing
+make lint
+
+# Format code only
+make format
+
+# Clean up temporary files
+make clean
+```
+
+#### Manual Linting
+```bash
+# Run all linters with auto-fix
+./lint.sh --fix
+
+# Run specific linters
+./lint.sh --ruff-only --fix    # Fast Python linting + formatting
+./lint.sh --mypy-only          # Type checking
+./lint.sh --shellcheck-only    # Shell script checking
+
+# Check without fixing
+./lint.sh                     # All linters (check mode)
+./lint.sh --quiet             # Minimal output
+```
+
+#### Configuration Files
+- `pyproject.toml` - Python tool configuration (ruff, black, isort, mypy)
+- `.shellcheckrc` - Shellcheck configuration with common warnings disabled
+- `lint.sh` - Comprehensive linting script with auto-fix capabilities
+
+### Adding New Features
+The codebase is modular and follows strict code quality standards:
+- `rag/utils.py` - Shared utilities and configuration
+- `rag/ingest.py` - Document ingestion and chunking  
+- `rag/query.py` - Search and answer generation
+- `tests/` - Comprehensive test suite
+
+**Before submitting changes:**
+1. Run `make lint-fix` to auto-fix issues
+2. Run `make test` to ensure functionality works
+3. Check that all linters pass with `make lint`
+
 
 The system is designed to be:
 - **📚 Educational** - Clear, well-documented code with comprehensive examples
