@@ -176,7 +176,7 @@ class IngestionService:
             try:
                 with collection.batch.dynamic() as batch:
                     for i, (chunk, vector) in enumerate(
-                        zip(chunks, vectors, strict=False)
+                        zip(chunks, vectors, strict=True)
                     ):
                         batch.add_object(
                             properties={
@@ -201,7 +201,7 @@ class IngestionService:
                 )
 
                 # Fallback to individual insertion
-                for i, (chunk, vector) in enumerate(zip(chunks, vectors, strict=False)):
+                for i, (chunk, vector) in enumerate(zip(chunks, vectors, strict=True)):
                     try:
                         collection.data.insert(
                             properties={
