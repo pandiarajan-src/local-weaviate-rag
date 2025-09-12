@@ -275,7 +275,7 @@ def main():
         logger.info(f"Starting batch insertion of {len(chunks)} chunks...")
         try:
             with coll.batch.dynamic() as batch:
-                for i, (chunk, vec) in enumerate(zip(chunks, vectors, strict=False)):
+                for i, (chunk, vec) in enumerate(zip(chunks, vectors, strict=True)):
                     batch.add_object(
                         properties={
                             "text": chunk,
@@ -300,7 +300,7 @@ def main():
             logger.error(f"Batch insertion failed: {batch_error}")
             # Try individual insertion as fallback
             logger.info("Attempting individual object insertion as fallback...")
-            for i, (chunk, vec) in enumerate(zip(chunks, vectors, strict=False)):
+            for i, (chunk, vec) in enumerate(zip(chunks, vectors, strict=True)):
                 try:
                     coll.data.insert(
                         properties={
