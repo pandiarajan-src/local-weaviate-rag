@@ -95,7 +95,7 @@ def get_openai_client() -> OpenAI:
             raise ExternalServiceError("OpenAI", str(e))
 
 
-def create_weaviate_client(config):
+def create_weaviate_client(config) -> weaviate.WeaviateClient:
     """
     Create a new Weaviate client instance without dependency management.
     For use in background tasks where client lifecycle needs manual control.
@@ -108,9 +108,7 @@ def create_weaviate_client(config):
             grpc_host=config.weaviate_host,
             grpc_port=config.weaviate_grpc_port,
             grpc_secure=(config.weaviate_scheme == "https"),
-            auth_credentials=weaviate.auth.AuthApiKey(
-                api_key=config.weaviate_api_key
-            ),
+            auth_credentials=weaviate.auth.AuthApiKey(api_key=config.weaviate_api_key),
             additional_config=AdditionalConfig(timeout=(5, 60)),
         )
 
@@ -139,7 +137,7 @@ def create_weaviate_client(config):
             raise ExternalServiceError("Weaviate", str(e))
 
 
-def create_openai_client(config):
+def create_openai_client(config) -> OpenAI:
     """
     Create a new OpenAI client instance.
     For use in background tasks.

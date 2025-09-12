@@ -23,16 +23,17 @@ from ..exceptions import (
 logger = logging.getLogger(__name__)
 
 
-def make_async(func):
+def make_async(func):  # type: ignore
     """Convert synchronous function to async."""
 
     @wraps(func)
-    async def async_wrapper(*args, **kwargs):
+    async def async_wrapper(*args, **kwargs):  # type: ignore
         loop = asyncio.get_event_loop()
         try:
             # Create partial function with kwargs if needed
             if kwargs:
                 from functools import partial
+
                 partial_func = partial(func, *args, **kwargs)
                 return await loop.run_in_executor(None, partial_func)
             else:
@@ -167,10 +168,10 @@ class IngestionService:
 
     async def _store_chunks(
         self, collection, chunks: list[str], vectors: list[list[float]], source: str
-    ):
+    ) -> None:
         """Store chunks with their vectors in the collection."""
 
-        def _batch_insert():
+        def _batch_insert() -> None:
             """Synchronous batch insertion."""
             try:
                 with collection.batch.dynamic() as batch:

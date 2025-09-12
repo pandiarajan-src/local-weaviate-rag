@@ -23,8 +23,12 @@ class Settings(BaseSettings):
     # OpenAI Configuration
     openai_api_key: str = Field(alias="OPENAI_API_KEY")
     openai_base_url: str | None = Field(default=None, alias="OPENAI_BASE_URL")
-    openai_embed_model: str = Field(default="text-embedding-3-small", alias="OPENAI_EMBED_MODEL")
-    openai_completions_model: str = Field(default="gpt-4o", alias="OPENAI_COMPLETIONS_MODEL")
+    openai_embed_model: str = Field(
+        default="text-embedding-3-small", alias="OPENAI_EMBED_MODEL"
+    )
+    openai_completions_model: str = Field(
+        default="gpt-4o", alias="OPENAI_COMPLETIONS_MODEL"
+    )
 
     # RAG Configuration
     rag_collection: str = Field(default="Documents", alias="RAG_COLLECTION")
@@ -40,7 +44,7 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
 
-    def validate_required_settings(self):
+    def validate_required_settings(self) -> None:
         """Validate that all required settings are present."""
         if (
             not self.weaviate_api_key
@@ -55,7 +59,7 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     """Get application settings (cached)."""
-    settings = Settings()
+    settings = Settings(_env_file=".env")  # type: ignore
     settings.validate_required_settings()
     return settings
 

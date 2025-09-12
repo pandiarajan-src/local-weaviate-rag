@@ -23,7 +23,7 @@ async def query_documents(
     weaviate_client: weaviate.WeaviateClient = Depends(get_weaviate_client),
     openai_client: OpenAI = Depends(get_openai_client),
     config=Depends(get_config),
-):
+) -> QueryResponse:
     """
     Query documents and generate an AI-powered answer.
 

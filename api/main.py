@@ -50,7 +50,7 @@ app.add_middleware(
 
 # Middleware for correlation ID and logging
 @app.middleware("http")
-async def add_correlation_id(request: Request, call_next):
+async def add_correlation_id(request: Request, call_next):  # type: ignore
     """Add correlation ID to each request for tracing."""
     correlation_id = str(uuid.uuid4())
     request.state.correlation_id = correlation_id
@@ -76,7 +76,7 @@ async def add_correlation_id(request: Request, call_next):
 
 # Global exception handlers
 @app.exception_handler(RAGAPIError)
-async def rag_exception_handler(request: Request, exc: RAGAPIError):
+async def rag_exception_handler(request: Request, exc: RAGAPIError) -> JSONResponse:
     """Handle custom RAG API exceptions."""
     correlation_id = getattr(request.state, "correlation_id", "unknown")
 
@@ -93,7 +93,7 @@ async def rag_exception_handler(request: Request, exc: RAGAPIError):
 
 
 @app.exception_handler(Exception)
-async def general_exception_handler(request: Request, exc: Exception):
+async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """Handle unexpected exceptions."""
     correlation_id = getattr(request.state, "correlation_id", "unknown")
 
@@ -118,7 +118,7 @@ app.include_router(collections.router, prefix="/api/v1", tags=["collections"])
 
 # Root endpoint
 @app.get("/")
-async def root():
+async def root() -> dict:
     """Root endpoint with basic API information."""
     return {
         "name": "Local Weaviate RAG API",

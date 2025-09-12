@@ -25,7 +25,7 @@ async def ingest_text(
     weaviate_client: weaviate.WeaviateClient = Depends(get_weaviate_client),
     openai_client: OpenAI = Depends(get_openai_client),
     config=Depends(get_config),
-):
+) -> IngestResponse:
     """
     Ingest text content into the vector database.
 
@@ -55,7 +55,7 @@ async def ingest_file(
     weaviate_client: weaviate.WeaviateClient = Depends(get_weaviate_client),
     openai_client: OpenAI = Depends(get_openai_client),
     config=Depends(get_config),
-):
+) -> FileIngestResponse:
     """
     Ingest a file into the vector database via background processing.
 
@@ -112,7 +112,7 @@ async def ingest_file(
 
 
 @router.get("/ingest/status/{job_id}", response_model=JobStatus)
-async def get_ingestion_status(job_id: str):
+async def get_ingestion_status(job_id: str) -> JobStatus:
     """
     Get the status of a background ingestion job.
 

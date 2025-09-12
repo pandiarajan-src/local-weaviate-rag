@@ -6,10 +6,6 @@ from datetime import datetime
 import logging
 import uuid
 
-from fastapi import UploadFile
-from openai import OpenAI
-import weaviate
-
 from ..dependencies.clients import create_openai_client, create_weaviate_client
 from ..exceptions import FileProcessingError
 from ..models import JobStatus
@@ -54,7 +50,7 @@ class BackgroundJobManager:
         status: str,
         progress: int | None = None,
         message: str | None = None,
-    ):
+    ) -> None:
         """Update job status."""
         if job_id in _job_storage:
             job = _job_storage[job_id]
@@ -68,7 +64,7 @@ class BackgroundJobManager:
             logger.info(f"Job {job_id} updated: {status} ({progress}%) - {message}")
 
     @staticmethod
-    def cleanup_old_jobs(max_age_hours: int = 24):
+    def cleanup_old_jobs(max_age_hours: int = 24) -> None:
         """Clean up old completed jobs."""
         # Implementation would check timestamps and remove old jobs
         # For now, we'll keep it simple
@@ -82,7 +78,7 @@ async def process_file_content_ingestion(
     file_size: int,
     source: str,
     config,
-):
+) -> None:
     """
     Background task for processing file content ingestion.
     """
@@ -132,7 +128,7 @@ async def process_file_content_ingestion(
         # Create fresh client connections for the background task
         weaviate_client = create_weaviate_client(config)
         openai_client = create_openai_client(config)
-        
+
         # Create ingestion service with fresh clients
         ingestion_service = IngestionService(weaviate_client, openai_client)
 

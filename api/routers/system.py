@@ -22,7 +22,7 @@ async def health_check(
     weaviate_client: weaviate.WeaviateClient = Depends(get_weaviate_client),
     openai_client: OpenAI = Depends(get_openai_client),
     config=Depends(get_config),
-):
+) -> HealthResponse:
     """
     Health check endpoint that verifies all system dependencies.
     """

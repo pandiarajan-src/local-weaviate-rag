@@ -187,7 +187,7 @@ class QueryService:
     ) -> list[float]:
         """Create embedding for the query."""
 
-        def _embed():
+        def _embed() -> list[float]:
             response = self.openai_client.embeddings.create(
                 model=embed_model, input=[query]
             )
@@ -203,10 +203,10 @@ class QueryService:
         query_vector: list[float],
         alpha: float,
         limit: int,
-    ):
+    ):  # type: ignore
         """Perform hybrid search."""
 
-        def _search():
+        def _search():  # type: ignore
             return hybrid_search(collection, query, query_vector, alpha, limit)
 
         loop = asyncio.get_event_loop()
@@ -218,7 +218,7 @@ class QueryService:
     ) -> str:
         """Generate answer using LLM."""
 
-        def _generate():
+        def _generate() -> str:
             prompt = build_prompt(query, contexts)
 
             response = self.openai_client.chat.completions.create(
