@@ -63,6 +63,7 @@ stop-api:
 	@echo "Stopping FastAPI server..."
 	@lsof -ti:8000 | xargs kill -9 2>/dev/null || echo "No server running on port 8000"
 
+
 # Clean up temporary files and caches
 clean:
 	find . -type f -name "*.pyc" -delete
