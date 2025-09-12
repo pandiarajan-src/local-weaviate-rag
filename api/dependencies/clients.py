@@ -169,3 +169,12 @@ class ClientDependency:
     def __init__(self, weaviate_client: weaviate.WeaviateClient, openai_client: OpenAI):
         self.weaviate = weaviate_client
         self.openai = openai_client
+
+
+__all__ = [
+    "get_weaviate_client",
+    "get_openai_client", 
+    "create_weaviate_client",
+    "create_openai_client",
+    "ClientDependency"
+]

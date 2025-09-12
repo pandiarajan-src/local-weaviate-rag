@@ -30,14 +30,11 @@ def make_async(func):  # type: ignore
     async def async_wrapper(*args, **kwargs):  # type: ignore
         loop = asyncio.get_event_loop()
         try:
-            # Create partial function with kwargs if needed
-            if kwargs:
-                from functools import partial
-
-                partial_func = partial(func, *args, **kwargs)
-                return await loop.run_in_executor(None, partial_func)
-            else:
-                return await loop.run_in_executor(None, func, *args)
+            from functools import partial
+            
+            # Always use partial to handle both args and kwargs
+            partial_func = partial(func, *args, **kwargs)
+            return await loop.run_in_executor(None, partial_func)
         except Exception as e:
             logger.error(f"Error in async wrapper for {func.__name__}: {e}")
             raise
