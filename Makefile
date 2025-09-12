@@ -1,6 +1,6 @@
 # Makefile for local-weaviate-rag project
 
-.PHONY: help lint lint-fix test test-full format check install-dev clean
+.PHONY: help lint lint-fix test test-full test-api format check install-dev clean start-api stop-api
 
 # Default target
 help:
@@ -11,12 +11,16 @@ help:
 	@echo "  check        - Check code quality without fixing"
 	@echo "  test         - Run basic functionality tests"
 	@echo "  test-full    - Run comprehensive functionality tests"
+	@echo "  test-api     - Test FastAPI service endpoints"
+	@echo "  start-api    - Start FastAPI development server"
+	@echo "  stop-api     - Stop FastAPI server (if running in background)"
 	@echo "  install-dev  - Install development dependencies"
 	@echo "  clean        - Clean up temporary files and caches"
 	@echo ""
 	@echo "Examples:"
 	@echo "  make lint-fix    # Fix all linting issues"
 	@echo "  make test-full   # Run complete test suite"
+	@echo "  make start-api   # Start API server"
 
 # Install development dependencies
 install-dev:
@@ -45,6 +49,19 @@ test:
 
 # Run comprehensive functionality tests (alias for test)
 test-full: test
+
+# Test FastAPI service endpoints
+test-api:
+	uv run python test_api.py
+
+# Start FastAPI development server
+start-api:
+	./start_api.sh
+
+# Stop FastAPI server (kill process listening on port 8000)
+stop-api:
+	@echo "Stopping FastAPI server..."
+	@lsof -ti:8000 | xargs kill -9 2>/dev/null || echo "No server running on port 8000"
 
 # Clean up temporary files and caches
 clean:
