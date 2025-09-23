@@ -16,9 +16,9 @@ make start-api
 ```
 
 ### 2. Access the API
-- **API Server**: http://localhost:8000
-- **Interactive Docs**: http://localhost:8000/docs
-- **Health Check**: http://localhost:8000/api/v1/health
+- **API Server**: http://localhost:8001
+- **Interactive Docs**: http://localhost:8001/docs
+- **Health Check**: http://localhost:8001/api/v1/health
 
 ### 3. Test the API
 ```bash
@@ -252,13 +252,13 @@ make stop-api
 import requests
 
 # Ingest text
-response = requests.post("http://localhost:8000/api/v1/ingest/text", json={
+response = requests.post("http://localhost:8001/api/v1/ingest/text", json={
     "text": "Your document content...",
     "source": "My Document"
 })
 
 # Query
-response = requests.post("http://localhost:8000/api/v1/query", json={
+response = requests.post("http://localhost:8001/api/v1/query", json={
     "query": "What is this about?"
 })
 ```
@@ -266,15 +266,15 @@ response = requests.post("http://localhost:8000/api/v1/query", json={
 ### cURL Examples
 ```bash
 # Health check
-curl http://localhost:8000/api/v1/health
+curl http://localhost:8001/api/v1/health
 
 # Ingest text
-curl -X POST http://localhost:8000/api/v1/ingest/text \
+curl -X POST http://localhost:8001/api/v1/ingest/text \
   -H "Content-Type: application/json" \
   -d '{"text": "Sample text", "source": "Test"}'
 
 # Query
-curl -X POST http://localhost:8000/api/v1/query \
+curl -X POST http://localhost:8001/api/v1/query \
   -H "Content-Type: application/json" \
   -d '{"query": "What is this about?"}'
 ```
@@ -313,5 +313,5 @@ For production deployment, consider:
 
 Example production command:
 ```bash
-uvicorn api.main:app --host 0.0.0.0 --port 8000 --workers 4
+uvicorn api.main:app --host 0.0.0.0 --port 8001 --workers 4
 ```

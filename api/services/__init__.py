@@ -2,7 +2,7 @@
 Business logic services for the FastAPI application.
 """
 
-from . import ingestion
-from . import query
+from .ingestion import IngestionService
+from .query import QueryService
 
-__all__ = ["ingestion", "query"]
+__all__ = ["IngestionService", "QueryService"]

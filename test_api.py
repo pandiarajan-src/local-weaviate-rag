@@ -8,7 +8,7 @@ import time
 
 import requests
 
-API_BASE = "http://localhost:8000/api/v1"
+API_BASE = "http://localhost:8001/api/v1"
 
 
 def test_health():

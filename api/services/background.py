@@ -129,39 +129,53 @@ async def process_file_content_ingestion(
         weaviate_client = create_weaviate_client(config)
         openai_client = create_openai_client(config)
 
-        # Create ingestion service with fresh clients
-        ingestion_service = IngestionService(weaviate_client, openai_client)
+        try:
+            # Create ingestion service with fresh clients
+            ingestion_service = IngestionService(weaviate_client, openai_client)
 
-        # Process the text using ingestion service
-        result = await ingestion_service.ingest_text(
-            text=text,
-            source=source or filename,
-            collection_name=config.rag_collection,
-            embed_model=config.openai_embed_model,
-            chunk_tokens=config.chunk_tokens,
-            chunk_overlap=config.chunk_overlap,
-        )
+            # Process the text using ingestion service
+            result = await ingestion_service.ingest_text(
+                text=text,
+                source=source or filename,
+                collection_name=config.rag_collection,
+                embed_model=config.openai_embed_model,
+                chunk_tokens=config.chunk_tokens,
+                chunk_overlap=config.chunk_overlap,
+            )
 
-        # Close clients when done
-        weaviate_client.close()
+            BackgroundJobManager.update_job(
+                job_id,
+                "completed",
+                100,
+                f"Successfully ingested {result['chunks_created']} chunks from {filename}",
+            )
 
-        BackgroundJobManager.update_job(
-            job_id,
-            "completed",
-            100,
-            f"Successfully ingested {result['chunks_created']} chunks from {filename}",
-        )
+            logger.info(f"Background file ingestion completed for job {job_id}")
 
-        logger.info(f"Background file ingestion completed for job {job_id}")
+        except FileProcessingError as e:
+            BackgroundJobManager.update_job(
+                job_id, "failed", None, f"File processing error: {e.message}"
+            )
+            logger.error(f"File processing failed for job {job_id}: {e.message}")
 
-    except FileProcessingError as e:
-        BackgroundJobManager.update_job(
-            job_id, "failed", None, f"File processing error: {e.message}"
-        )
-        logger.error(f"File processing failed for job {job_id}: {e.message}")
+        except Exception as e:
+            BackgroundJobManager.update_job(
+                job_id, "failed", None, f"Unexpected error: {e!s}"
+            )
+            logger.error(
+                f"Unexpected error in background job {job_id}: {e}", exc_info=True
+            )
+
+        finally:
+            # Always close clients when done
+            try:
+                weaviate_client.close()
+            except Exception as e:
+                logger.warning(f"Error closing Weaviate client: {e}")
 
     except Exception as e:
+        # Outer exception handler for critical failures before client creation
         BackgroundJobManager.update_job(
-            job_id, "failed", None, f"Unexpected error: {e!s}"
+            job_id, "failed", None, f"Critical error: {e!s}"
         )
-        logger.error(f"Unexpected error in background job {job_id}: {e}", exc_info=True)
+        logger.error(f"Critical error in background job {job_id}: {e}", exc_info=True)
