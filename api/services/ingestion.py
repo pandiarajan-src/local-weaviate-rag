@@ -31,7 +31,7 @@ def make_async(func):  # type: ignore
         loop = asyncio.get_event_loop()
         try:
             from functools import partial
-            
+
             # Always use partial to handle both args and kwargs
             partial_func = partial(func, *args, **kwargs)
             return await loop.run_in_executor(None, partial_func)

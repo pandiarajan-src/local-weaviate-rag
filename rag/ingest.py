@@ -8,7 +8,7 @@ import time
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
 import weaviate
-from weaviate.classes.config import DataType, Property
+from weaviate.classes.config import DataType, Property, VectorDistances, Configure
 from weaviate.collections import Collection
 
 from .utils import backoff_retry, chunk_text, env, get_weaviate_client, logger

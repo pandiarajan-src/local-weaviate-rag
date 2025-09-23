@@ -172,9 +172,9 @@ class ClientDependency:
 
 
 __all__ = [
-    "get_weaviate_client",
-    "get_openai_client", 
-    "create_weaviate_client",
+    "ClientDependency",
     "create_openai_client",
-    "ClientDependency"
+    "create_weaviate_client",
+    "get_openai_client",
+    "get_weaviate_client",
 ]

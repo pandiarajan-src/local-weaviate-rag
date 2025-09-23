@@ -162,8 +162,10 @@ async def process_file_content_ingestion(
             BackgroundJobManager.update_job(
                 job_id, "failed", None, f"Unexpected error: {e!s}"
             )
-            logger.error(f"Unexpected error in background job {job_id}: {e}", exc_info=True)
-        
+            logger.error(
+                f"Unexpected error in background job {job_id}: {e}", exc_info=True
+            )
+
         finally:
             # Always close clients when done
             try:
