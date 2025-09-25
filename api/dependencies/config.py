@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     max_context_chunks: int = Field(default=6, alias="MAX_CONTEXT_CHUNKS")
 
     # API Configuration
+    api_port: int = Field(default=8001, alias="API_PORT")
     max_file_size: int = Field(default=50 * 1024 * 1024, alias="MAX_FILE_SIZE")  # 50MB
     max_text_size: int = Field(default=1024 * 1024, alias="MAX_TEXT_SIZE")  # 1MB
 

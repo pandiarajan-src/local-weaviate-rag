@@ -157,7 +157,7 @@ make start-api
 ./start_api.sh
 
 # Access documentation
-# http://localhost:8001/docs
+# http://localhost:${API_PORT:-8001}/docs
 ```
 
 ### Testing the API
@@ -172,15 +172,19 @@ python test_api.py
 ### Example API Calls
 ```bash
 # Health check
-curl http://localhost:8001/api/v1/health
+
+curl http://localhost:${API_PORT:-8001}/api/v1/health
 
 # Ingest text
-curl -X POST http://localhost:8001/api/v1/ingest/text \
+curl -X POST http://localhost:${API_PORT:-8001}/api/v1/ingest/text \
+
   -H "Content-Type: application/json" \
   -d '{"text": "Sample document", "source": "Test"}'
 
 # Query documents
-curl -X POST http://localhost:8001/api/v1/query \
+
+curl -X POST http://localhost:${API_PORT:-8001}/api/v1/query \
+
   -H "Content-Type: application/json" \
   -d '{"query": "What is this about?"}'
 ```
