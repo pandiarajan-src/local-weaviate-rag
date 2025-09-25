@@ -9,6 +9,9 @@ if [ -f .env ]; then
   source .env
 fi
 
+# Set default API port if not set
+API_PORT=${API_PORT:-8001}
+
 # Check if Weaviate is running
 echo "🔍 Checking Weaviate status..."
 if ! docker compose -f docker-compose.weaviate.yml ps | grep -q "Up"; then
@@ -23,10 +26,10 @@ echo "📦 Installing dependencies..."
 uv sync
 
 # Start the API server
-echo "🌐 Starting FastAPI server on http://localhost:8001"
-echo "📖 API Documentation: http://localhost:8001/docs"
-echo "🔍 Health Check: http://localhost:8001/api/v1/health"
+echo "🌐 Starting FastAPI server on http://localhost:${API_PORT}"
+echo "📖 API Documentation: http://localhost:${API_PORT}/docs"
+echo "🔍 Health Check: http://localhost:${API_PORT}/api/v1/health"
 echo ""
 echo "Press Ctrl+C to stop the server"
 
-uv run uvicorn api.main:app --host 0.0.0.0 --port 8001 --reload
+uv run uvicorn api.main:app --host 0.0.0.0 --port "${API_PORT}" --reload

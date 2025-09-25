@@ -4,11 +4,13 @@ Simple test script for the FastAPI RAG service.
 Tests basic functionality without external dependencies.
 """
 
+import os
 import time
 
 import requests
 
-API_BASE = "http://localhost:8001/api/v1"
+API_PORT = os.getenv("API_PORT", "8001")
+API_BASE = f"http://localhost:{API_PORT}/api/v1"
 
 
 def test_health():

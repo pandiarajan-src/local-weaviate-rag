@@ -58,10 +58,10 @@ test-api:
 start-api:
 	./start_api.sh
 
-# Stop FastAPI server (kill process listening on port 8001)
+# Stop FastAPI server (kill process listening on API_PORT or default 8001)
 stop-api:
 	@echo "Stopping FastAPI server..."
-	@lsof -ti:8001 | xargs kill -9 2>/dev/null || echo "No server running on port 8001"
+	@API_PORT=$${API_PORT:-8001}; lsof -ti:$$API_PORT | xargs kill -9 2>/dev/null || echo "No server running on port $$API_PORT"
 
 
 # Clean up temporary files and caches
