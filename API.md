@@ -22,6 +22,7 @@ make start-api
 
 **Note**: The API port is configured via the `API_PORT` environment variable in `.env` (default: 8001)
 
+
 ### 3. Test the API
 ```bash
 make test-api
@@ -269,15 +270,18 @@ response = requests.post(f"http://localhost:{os.getenv('API_PORT', '8001')}/api/
 ### cURL Examples
 ```bash
 # Health check
+
 curl http://localhost:${API_PORT:-8001}/api/v1/health
 
 # Ingest text
 curl -X POST http://localhost:${API_PORT:-8001}/api/v1/ingest/text \
+
   -H "Content-Type: application/json" \
   -d '{"text": "Sample text", "source": "Test"}'
 
 # Query
 curl -X POST http://localhost:${API_PORT:-8001}/api/v1/query \
+
   -H "Content-Type: application/json" \
   -d '{"query": "What is this about?"}'
 ```

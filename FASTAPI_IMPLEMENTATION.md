@@ -172,15 +172,19 @@ python test_api.py
 ### Example API Calls
 ```bash
 # Health check
+
 curl http://localhost:${API_PORT:-8001}/api/v1/health
 
 # Ingest text
 curl -X POST http://localhost:${API_PORT:-8001}/api/v1/ingest/text \
+
   -H "Content-Type: application/json" \
   -d '{"text": "Sample document", "source": "Test"}'
 
 # Query documents
+
 curl -X POST http://localhost:${API_PORT:-8001}/api/v1/query \
+
   -H "Content-Type: application/json" \
   -d '{"query": "What is this about?"}'
 ```

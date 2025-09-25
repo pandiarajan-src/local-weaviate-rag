@@ -58,6 +58,7 @@ test-api:
 start-api:
 	./start_api.sh
 
+
 # Stop FastAPI server (kill process listening on API_PORT or default 8001)
 stop-api:
 	@echo "Stopping FastAPI server..."
