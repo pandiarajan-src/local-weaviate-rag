@@ -1,0 +1,85 @@
+version: "3.8"
+
+services:
+  # Weaviate vector database
+  weaviate:
+    image: cr.weaviate.io/semitechnologies/weaviate:1.26.3
+    restart: unless-stopped
+    ports:
+      - "${WEAVIATE_PORT:-8080}:8080"
+      - "${WEAVIATE_GRPC_PORT:-50051}:50051"
+    environment:
+      QUERY_DEFAULTS_LIMIT: "25"
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "false"
+      AUTHENTICATION_APIKEY_ENABLED: "true"
+      AUTHENTICATION_APIKEY_ALLOWED_KEYS: "${WEAVIATE_API_KEY:?set in .env}"
+      AUTHENTICATION_APIKEY_USERS: "local-admin"
+      PERSISTENCE_DATA_PATH: "/var/lib/weaviate"
+      ENABLE_MODULES: ""
+      DEFAULT_VECTORIZER_MODULE: "none"
+      CLUSTER_HOSTNAME: "node1"
+      AUTOSCHEMA_ENABLED: "false"
+      ENABLE_EXPERIMENTAL_BM25: "true"
+    volumes:
+      - weaviate-data:/var/lib/weaviate
+    networks:
+      - rag-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/v1/.well-known/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # FastAPI application
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-8001}:8001"
+    environment:
+      # Weaviate connection (use service name for internal communication)
+      WEAVIATE_SCHEME: http
+      WEAVIATE_HOST: weaviate
+      WEAVIATE_PORT: 8080
+      WEAVIATE_GRPC_PORT: 50051
+      WEAVIATE_API_KEY: ${WEAVIATE_API_KEY:?set in .env}
+
+      # OpenAI configuration
+      OPENAI_API_KEY: ${OPENAI_API_KEY:?set in .env}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      OPENAI_EMBED_MODEL: ${OPENAI_EMBED_MODEL:-text-embedding-3-small}
+      OPENAI_COMPLETIONS_MODEL: ${OPENAI_COMPLETIONS_MODEL:-gpt-4o}
+
+      # RAG configuration
+      RAG_COLLECTION: ${RAG_COLLECTION:-Documents}
+      CHUNK_TOKENS: ${CHUNK_TOKENS:-400}
+      CHUNK_OVERLAP: ${CHUNK_OVERLAP:-60}
+      HYBRID_ALPHA: ${HYBRID_ALPHA:-0.5}
+      TOP_K: ${TOP_K:-5}
+      MAX_CONTEXT_CHUNKS: ${MAX_CONTEXT_CHUNKS:-6}
+
+      # API configuration
+      API_PORT: 8001
+      MAX_FILE_SIZE: ${MAX_FILE_SIZE:-52428800}
+      MAX_TEXT_SIZE: ${MAX_TEXT_SIZE:-1048576}
+    depends_on:
+      weaviate:
+        condition: service_healthy
+    networks:
+      - rag-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/api/v1/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  rag-network:
+    driver: bridge
+
+volumes:
+  weaviate-data:
