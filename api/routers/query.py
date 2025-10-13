@@ -38,7 +38,7 @@ async def query_documents(
 
     result = await service.process_query(
         query=request.query,
-        collection_name=request.collection or config.rag_collection,
+        collection_name=request.collection,  # None means search all collections
         embed_model=config.openai_embed_model,
         completions_model=config.openai_completions_model,
         top_k=getattr(options, "top_k", None) or config.top_k,

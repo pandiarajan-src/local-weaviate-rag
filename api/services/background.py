@@ -77,6 +77,7 @@ async def process_file_content_ingestion(
     filename: str,
     file_size: int,
     source: str,
+    collection: str,
     config,
 ) -> None:
     """
@@ -137,7 +138,7 @@ async def process_file_content_ingestion(
             result = await ingestion_service.ingest_text(
                 text=text,
                 source=source or filename,
-                collection_name=config.rag_collection,
+                collection_name=collection or "Documents",
                 embed_model=config.openai_embed_model,
                 chunk_tokens=config.chunk_tokens,
                 chunk_overlap=config.chunk_overlap,

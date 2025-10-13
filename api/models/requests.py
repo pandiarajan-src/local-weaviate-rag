@@ -12,6 +12,9 @@ class IngestTextRequest(BaseModel):
 
     text: str = Field(..., min_length=1, description="Text content to ingest")
     source: str = Field("", description="Source identifier for the text")
+    collection: str = Field(
+        "Documents", description="Collection name to store the text"
+    )
     metadata: dict[str, Any] | None = Field(None, description="Additional metadata")
 
     @field_validator("text")
@@ -26,12 +29,25 @@ class IngestTextRequest(BaseModel):
     def validate_source(cls, v: str) -> str:
         return v.strip() if v else ""
 
+    @field_validator("collection")
+    @classmethod
+    def validate_collection(cls, v: str) -> str:
+        # Basic validation for collection names
+        v = v.strip()
+        if not v:
+            return "Documents"
+        # Collection name must start with uppercase letter for Weaviate
+        return v[0].upper() + v[1:] if v else "Documents"
+
 
 class QueryRequest(BaseModel):
     """Request model for document querying."""
 
     query: str = Field(..., min_length=1, description="Search query")
-    collection: str | None = Field("Documents", description="Collection name to search")
+    collection: str | None = Field(
+        None,
+        description="Collection name to search. If not provided or empty, searches all collections",
+    )
     options: Optional["QueryOptions"] = Field(
         None, description="Query configuration options"
     )
@@ -40,6 +56,15 @@ class QueryRequest(BaseModel):
     @classmethod
     def validate_query(cls, v: str) -> str:
         return v.strip()
+
+    @field_validator("collection")
+    @classmethod
+    def validate_collection(cls, v: str | None) -> str | None:
+        if v is None or not v.strip():
+            return None
+        # Ensure proper capitalization
+        v = v.strip()
+        return v[0].upper() + v[1:] if v else None
 
 
 class QueryOptions(BaseModel):
