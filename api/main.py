@@ -133,6 +133,7 @@ async def root() -> dict:
 if __name__ == "__main__":
     import os
 
+
     import uvicorn
 
     port = int(os.getenv("API_PORT", "8001"))
