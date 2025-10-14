@@ -38,7 +38,7 @@ async def ingest_text(
     result = await service.ingest_text(
         text=request.text,
         source=request.source or "API Upload",
-        collection_name=config.rag_collection,
+        collection_name=request.collection or "Documents",
         embed_model=config.openai_embed_model,
         chunk_tokens=config.chunk_tokens,
         chunk_overlap=config.chunk_overlap,
@@ -52,6 +52,7 @@ async def ingest_file(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     source: str = Form(""),
+    collection: str = Form("Documents"),
     weaviate_client: weaviate.WeaviateClient = Depends(get_weaviate_client),
     openai_client: OpenAI = Depends(get_openai_client),
     config=Depends(get_config),
@@ -99,6 +100,7 @@ async def ingest_file(
         filename=filename,
         file_size=file_size,
         source=source,
+        collection=collection or "Documents",
         config=config,
     )
 

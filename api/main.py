@@ -2,6 +2,7 @@
 FastAPI application main entry point.
 """
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 import logging
 import uuid
@@ -21,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan events."""
     logger.info("Starting FastAPI RAG service...")
     yield
@@ -131,6 +132,8 @@ async def root() -> dict:
 
 if __name__ == "__main__":
     import os
+
+
     import uvicorn
 
     port = int(os.getenv("API_PORT", "8001"))
