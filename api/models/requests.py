@@ -44,9 +44,9 @@ class QueryRequest(BaseModel):
     """Request model for document querying."""
 
     query: str = Field(..., min_length=1, description="Search query")
-    collection: str | None = Field(
+    collection: str | list[str] | None = Field(
         None,
-        description="Collection name to search. If not provided or empty, searches all collections",
+        description="Collection name(s) to search. Can be a single string, list of strings, or None to search all collections",
     )
     options: Optional["QueryOptions"] = Field(
         None, description="Query configuration options"
@@ -59,12 +59,30 @@ class QueryRequest(BaseModel):
 
     @field_validator("collection")
     @classmethod
-    def validate_collection(cls, v: str | None) -> str | None:
-        if v is None or not v.strip():
+    def validate_collection(cls, v: str | list[str] | None) -> str | list[str] | None:
+        if v is None:
             return None
-        # Ensure proper capitalization
-        v = v.strip()
-        return v[0].upper() + v[1:] if v else None
+
+        # Handle single string
+        if isinstance(v, str):
+            v = v.strip()
+            if not v:
+                return None
+            # Ensure proper capitalization
+            return v[0].upper() + v[1:] if v else None
+
+        # Handle list of strings
+        # v must be a list at this point since we've checked for None and str
+        validated_list = []
+        for collection_name in v:
+            if collection_name and isinstance(collection_name, str):
+                collection_name = collection_name.strip()
+                if collection_name:
+                    # Ensure proper capitalization
+                    validated_list.append(
+                        collection_name[0].upper() + collection_name[1:]
+                    )
+        return validated_list if validated_list else None
 
 
 class QueryOptions(BaseModel):

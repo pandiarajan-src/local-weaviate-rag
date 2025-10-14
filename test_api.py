@@ -59,8 +59,8 @@ def test_text_ingestion():
 
 
 def test_query():
-    """Test query endpoint."""
-    print("\n🔍 Testing query endpoint...")
+    """Test query endpoint (search all collections)."""
+    print("\n🔍 Testing query endpoint (all collections)...")
     try:
         payload = {
             "query": "What is this document about?",
@@ -75,7 +75,98 @@ def test_query():
             print(f"Query: {data['query']}")
             print(f"Answer: {data['answer'][:200]}...")
             print(f"Retrieved chunks: {data['chunk_count']}")
+            print(f"Collection searched: {data['collection']}")
             print(f"Processing time: {data['processing_time']}s")
+            return True
+        else:
+            print(f"Query failed: {response.text}")
+            return False
+    except Exception as e:
+        print(f"Query error: {e}")
+        return False
+
+
+def test_query_single_collection():
+    """Test query endpoint with single collection (backward compatibility)."""
+    print("\n🔍 Testing query endpoint (single collection)...")
+    try:
+        payload = {
+            "query": "What is this document about?",
+            "collection": "Documents",
+            "options": {"top_k": 3, "hybrid_alpha": 0.5},
+        }
+
+        response = requests.post(f"{API_BASE}/query", json=payload, timeout=30)
+        print(f"Status: {response.status_code}")
+
+        if response.status_code == 200:
+            data = response.json()
+            print(f"Query: {data['query']}")
+            print(f"Answer: {data['answer'][:200]}...")
+            print(f"Retrieved chunks: {data['chunk_count']}")
+            print(f"Collection searched: {data['collection']}")
+            print(f"Processing time: {data['processing_time']}s")
+
+            # Verify single collection was searched
+            if data["collection"] != "Documents":
+                print(f"⚠️ Warning: Expected 'Documents', got '{data['collection']}'")
+
+            return True
+        else:
+            print(f"Query failed: {response.text}")
+            return False
+    except Exception as e:
+        print(f"Query error: {e}")
+        return False
+
+
+def test_query_multiple_collections():
+    """Test query endpoint with multiple collections (new feature)."""
+    print("\n🔍 Testing query endpoint (multiple collections)...")
+    try:
+        # First, get available collections
+        collections_response = requests.get(f"{API_BASE}/collections", timeout=10)
+        if collections_response.status_code != 200:
+            print("⚠️ Cannot retrieve collections list, skipping multi-collection test")
+            return True
+
+        collections_data = collections_response.json()
+        available_collections = [c["name"] for c in collections_data["collections"]]
+
+        if len(available_collections) < 2:
+            print(
+                f"⚠️ Only {len(available_collections)} collection(s) available, skipping multi-collection test"
+            )
+            return True
+
+        # Use first two collections for testing
+        test_collections = available_collections[:2]
+        print(f"Testing with collections: {test_collections}")
+
+        payload = {
+            "query": "What information is available?",
+            "collection": test_collections,
+            "options": {"top_k": 5, "hybrid_alpha": 0.5},
+        }
+
+        response = requests.post(f"{API_BASE}/query", json=payload, timeout=30)
+        print(f"Status: {response.status_code}")
+
+        if response.status_code == 200:
+            data = response.json()
+            print(f"Query: {data['query']}")
+            print(f"Answer: {data['answer'][:200]}...")
+            print(f"Retrieved chunks: {data['chunk_count']}")
+            print(f"Collection searched: {data['collection']}")
+            print(f"Processing time: {data['processing_time']}s")
+
+            # Verify multiple collections were searched
+            expected_display = ", ".join(test_collections)
+            if data["collection"] != expected_display:
+                print(
+                    f"⚠️ Warning: Expected '{expected_display}', got '{data['collection']}'"
+                )
+
             return True
         else:
             print(f"Query failed: {response.text}")
@@ -189,7 +280,9 @@ def main():
     tests = [
         ("Health Check", test_health),
         ("Text Ingestion", test_text_ingestion),
-        ("Query Processing", test_query),
+        ("Query Processing (All Collections)", test_query),
+        ("Query Processing (Single Collection)", test_query_single_collection),
+        ("Query Processing (Multiple Collections)", test_query_multiple_collections),
         ("File Upload", test_file_upload),
         ("Collections List", test_collections),
     ]

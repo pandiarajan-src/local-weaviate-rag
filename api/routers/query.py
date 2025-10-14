@@ -28,8 +28,13 @@ async def query_documents(
     Query documents and generate an AI-powered answer.
 
     This endpoint performs hybrid search (combining keyword and semantic search)
-    across your document collection, retrieves relevant chunks, and uses GPT
+    across your document collection(s), retrieves relevant chunks, and uses GPT
     to generate a comprehensive answer based on the retrieved context.
+
+    You can query:
+    - A single collection by providing a string
+    - Multiple collections by providing a list of collection names
+    - All collections by omitting the collection field or passing null
     """
     service = QueryService(weaviate_client, openai_client)
 

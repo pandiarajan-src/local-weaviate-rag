@@ -34,7 +34,7 @@ class QueryService:
     async def process_query(
         self,
         query: str,
-        collection_name: str | None,
+        collection_name: str | list[str] | None,
         embed_model: str,
         completions_model: str,
         top_k: int,
@@ -47,7 +47,7 @@ class QueryService:
 
         Args:
             query: User query
-            collection_name: Collection to search, or None to search all collections
+            collection_name: Collection(s) to search - single string, list of strings, or None to search all collections
             embed_model: Embedding model for query vectorization
             completions_model: Model for answer generation
             top_k: Number of chunks to retrieve
@@ -73,11 +73,22 @@ class QueryService:
 
             try:
                 if collection_name:
-                    # Search specific collection
-                    collections_to_search.append(
-                        self.weaviate_client.collections.get(collection_name)
+                    # Convert single string to list for uniform handling
+                    if isinstance(collection_name, str):
+                        target_collections = [collection_name]
+                    else:
+                        target_collections = collection_name
+
+                    # Search specific collection(s)
+                    for coll_name in target_collections:
+                        collections_to_search.append(
+                            self.weaviate_client.collections.get(coll_name)
+                        )
+                        collection_names.append(coll_name)
+
+                    logger.info(
+                        f"Searching across {len(collections_to_search)} specified collection(s): {', '.join(collection_names)}"
                     )
-                    collection_names.append(collection_name)
                 else:
                     # Search all collections
                     all_collections = self.weaviate_client.collections.list_all()
@@ -99,7 +110,12 @@ class QueryService:
                 raise
             except Exception as e:
                 if collection_name:
-                    raise NotFoundError("Collection", collection_name)
+                    coll_name_str = (
+                        collection_name
+                        if isinstance(collection_name, str)
+                        else ", ".join(collection_name)
+                    )
+                    raise NotFoundError("Collection", coll_name_str)
                 else:
                     raise DatabaseError(f"Failed to list collections: {e!s}")
 
@@ -144,6 +160,16 @@ class QueryService:
                 raise DatabaseError(f"Search operation failed: {e!s}")
 
             if not search_results:
+                # Format collection name for display
+                if collection_name:
+                    collection_display = (
+                        collection_name
+                        if isinstance(collection_name, str)
+                        else ", ".join(collection_name)
+                    )
+                else:
+                    collection_display = f"All ({len(collection_names)} collections)"
+
                 return {
                     "query": query,
                     "answer": "No relevant documents found for your query.",
@@ -151,8 +177,7 @@ class QueryService:
                     "processing_time": round(time.time() - start_time, 2),
                     "model_used": completions_model,
                     "chunk_count": 0,
-                    "collection": collection_name
-                    or f"All ({len(collection_names)} collections)",
+                    "collection": collection_display,
                     "search_params": {
                         "top_k": top_k,
                         "hybrid_alpha": hybrid_alpha,
@@ -199,6 +224,16 @@ class QueryService:
 
             processing_time = time.time() - start_time
 
+            # Format collection name for display
+            if collection_name:
+                collection_display = (
+                    collection_name
+                    if isinstance(collection_name, str)
+                    else ", ".join(collection_name)
+                )
+            else:
+                collection_display = f"All ({len(collection_names)} collections)"
+
             return {
                 "query": query,
                 "answer": answer,
@@ -206,8 +241,7 @@ class QueryService:
                 "processing_time": round(processing_time, 2),
                 "model_used": completions_model,
                 "chunk_count": len(retrieved_chunks),
-                "collection": collection_name
-                or f"All ({len(collection_names)} collections)",
+                "collection": collection_display,
                 "search_params": {
                     "top_k": top_k,
                     "hybrid_alpha": hybrid_alpha,

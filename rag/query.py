@@ -104,14 +104,15 @@ def main():
     try:
         coll = client.collections.get(collection_name)
         res = hybrid_search(coll, args.query, query_vector, alpha=alpha, limit=top_k)
-        if not res.objects:
-            print("No results found.")
-            return
 
         contexts = []
-        for o in res.objects[:max_ctx]:
-            props = o.properties
-            contexts.append(props.get("text", ""))
+        if res.objects:
+            for o in res.objects[:max_ctx]:
+                props = o.properties
+                contexts.append(props.get("text", ""))
+        else:
+            # No results found - still provide output structure but inform user
+            contexts = []
 
         # Display input query
         print("=" * 80)
@@ -124,14 +125,19 @@ def main():
         print("=" * 80)
         print("RETRIEVED VECTOR SEARCH:")
         print("=" * 80)
-        print(
-            f"Found {len(res.objects)} results, using top {len(contexts)} for context"
-        )
-        print()
-        for i, context in enumerate(contexts, 1):
-            print(f"Result {i}:")
-            print("-" * 40)
-            print(context.strip())
+        if res.objects:
+            print(
+                f"Found {len(res.objects)} results, using top {len(contexts)} for context"
+            )
+            print()
+            for i, context in enumerate(contexts, 1):
+                print(f"Result {i}:")
+                print("-" * 40)
+                print(context.strip())
+                print()
+        else:
+            print("Found 0 results in the database.")
+            print("The LLM will respond based on its general knowledge.")
             print()
 
         # OpenAI generate (reuse the same client)
